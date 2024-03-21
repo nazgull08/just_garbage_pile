@@ -43,3 +43,13 @@ class TicketInventory:
         if class_name not in self.classes:
             raise ValueError(f"Класс {class_name} не существует.")
         return self.classes[class_name].remaining_tickets()  # Возврат количества оставшихся билетов.
+
+
+
+
+inventory = TicketInventory()
+inventory.add_class('Y', 150)
+inventory.add_class('E', 10)
+
+inventory.sell_tickets('Y', 10)
+print(inventory.get_remaining_tickets('Y'))
