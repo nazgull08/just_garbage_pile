@@ -30,6 +30,8 @@ class MainWindow(QMainWindow):
         self.outputWindow = OutputWindow()
         splitter.addWidget(self.outputWindow)
 
+        self.inputWindow.outputWindow = self.outputWindow
+
         # Настройки окна
         self.setWindowTitle('EMSR Analysis Tool')
         self.setGeometry(200, 100, 800, 600)

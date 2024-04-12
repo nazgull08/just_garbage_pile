@@ -1,5 +1,7 @@
 import csv
 from PyQt5.QtWidgets import QWidget, QGridLayout, QTableWidget, QTableWidgetItem, QLineEdit, QLabel, QPushButton, QVBoxLayout, QMessageBox, QFileDialog
+from littlewood import calculate_littlewood
+from emsrb import calculate_emsr
 
 class InputWindow(QWidget):
     def __init__(self):
@@ -41,6 +43,10 @@ class InputWindow(QWidget):
 
         # Добавление правой колонки в основной лейаут
         layout.addLayout(rightLayout, 0, 1, 5, 1)
+
+        self.calculateButton = QPushButton("Посчитать", self)
+        self.calculateButton.clicked.connect(self.calculate)
+        layout.addWidget(self.calculateButton, 3, 1)
 
     def addTableRow(self):
         rowPosition = self.table.rowCount()
@@ -85,3 +91,25 @@ class InputWindow(QWidget):
 
     def clearTable(self):
         self.table.setRowCount(0)
+
+    def calculate(self):
+        prices = []
+        mean = []
+        sigma = []
+        mest = 0
+
+        # Извлечение данных из таблицы
+        for row in range(self.table.rowCount()):
+            prices.append(int(self.table.item(row, 1).text()))
+            mean.append(float(self.table.item(row, 2).text()))
+            sigma.append(float(self.table.item(row, 3).text()))
+
+        # Запрос количества мест
+        mest = int(self.seatsInput.text())
+
+        # Вызов функций расчёта
+        calculated_prices_lw, protected_seats_lw = calculate_littlewood(prices, mean, sigma, mest)
+        calculated_prices_em, protected_seats_a, protected_seats_b = calculate_emsr(prices, mean, sigma, mest)
+
+        # Обновление данных в output_window
+        self.outputWindow.updateResults(calculated_prices_lw, protected_seats_lw, calculated_prices_em, protected_seats_a, protected_seats_b)
