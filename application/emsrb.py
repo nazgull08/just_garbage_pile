@@ -2,45 +2,122 @@ from scipy.stats import norm
 import numpy as np
 import math
 
-def calculate_emsr(prices, mean, sigma, mest):
-    sorted_data = sorted(zip(prices, mean, sigma), key=lambda x: x[0])
-    prices, mean, sigma = zip(*sorted_data) if sorted_data else ([], [], [])
+def calculate_emsr(names, prices, mean, sigma, mest):
+    prices = [520, 534, 567, 1050]
+    mean = [34, 39.6, 45.1, 17.3]
+    sigma = [11.3, 13.2, 15, 5.8]
+    names = ["d","c","b","a"]
 
-    # EMSR-a calculations: Protected seats
-    protected_seats_a = []
-    for index, price in enumerate(prices):
-        rez = []
-        for higher_index in range(index + 1, len(prices)):
-            for x in np.arange(0, 1000, 0.1):
-                probability = norm.cdf(x, mean[higher_index], sigma[higher_index])
-                survivor = 1 - probability
-                esmr = prices[higher_index] * survivor
-                if esmr <= price:
-                    rez.append(x)
-                    break
-        protected_seats_a.append(mest - (sum(rez) if rez else 0))
+    rez=[]
+    protect=[]
+    list=[]
+    test=0
 
-    # EMSR-b calculations: Expected revenue
-    emsrb_revenue = []
-    mu = [sum(mean[i+1:]) for i in range(len(mean) - 1)] + [0]
-    for i in range(len(prices) - 1):
-        num = sum(prices[j] * mean[j] for j in range(i+1, len(prices)))
-        susig = sum(sigma[j] ** 2 for j in range(i+1, len(prices)))
-        if mu[i] > 0:
-            agsig = math.sqrt(susig)
-            expected_revenue = num / mu[i]
-            for x in np.arange(0, 1000, 0.1):
-                probability = norm.cdf(x, mu[i], agsig)
-                survivor = 1 - probability
-                esmr = expected_revenue * survivor
-                if esmr <= prices[i]:
-                    emsrb_revenue.append(esmr)
-                    break
+    print(f"////////////")
+    for price in prices:
+        for y in range(len(prices)):
+            if prices[y]>price:
+                test+=1
+                for x in np.arange(0,1000, 0.1):
+                    probability = norm.cdf(x, mean[y], sigma[y])
+                    survivor = 1 - probability
+                    esmr = prices[y] * survivor
+                    if esmr < price:
+                        rez.append(x)
+                        break
+                    elif esmr == price:
+                        rez.append(x)
+                        break
+
+        if sum(rez) != 0:
+            protect.append(sum(rez))
+        list.extend(rez)
+        rez.clear()
+
+    print(f"Rez ={rez}")
+    print(f"List ={list}")
+    print(f"Protect ={protect}")
+
+
+
+    for y in range(len(prices)):
+        if y != (len(prices)-1):
+            print(f"Для билетов ценовой категорией -- {round(prices[y], 3)}$ нужно предоставлять {mest-protect[y]} мест за данную сумму ")
+        elif y == (len(prices)-1):
+            print(f"Для билетов ценовой категорией -- {round(prices[y], 3)}$ нужно предоставлять {mest} мест за данную сумму ")
+
+    #Начало EMSR-b
+    num=0
+    scet=0
+    susig=0
+    mu=[]
+    print(f"//////////////")
+    print(f"{mean}")
+    for i in range(len(mean)-1):
+        mu.append(sum(mean[i+1:]))
+        #mu=[sum(mean),sum(mean[2:]), sum(mean[3:])]
+    summamoney=[]
+    agsig=[]
+    for j in range(len(prices)):
+        if j > 0 and j != (len(prices)-1):
+            for i in range(len(prices)):
+                if i >= j:
+                    num += prices[i]*mean[i]
+                    print(f"Значение num = {prices[i]*mean[i]}, Значение цен{prices[i]}, значение спроса {mean[i]}")
+
+                    susig = susig + pow(sigma[i], 2)
+            print(f"переход {j}")
+            agsig.append(math.sqrt(susig))
+            susig=0
+            summamoney.append(num/mu[j-1])
+            num=0
+
+    print(f"Значение весов{mu}")
+    print(f"Значение суммы{summamoney}")
+    print(f"Значение новой сигма{agsig}")
+
+    # Обратный порядок списка names, чтобы соответствовать порядку в prices
+    names.reverse()
+
+    for y in range(len(prices)):
+        if y != (len(prices) - 1):
+            print(f"Для билетов ценовой категорией -- {round(prices[y], 3)}$ ({names[y]}) нужно предоставлять {mest - protect[y]} мест за данную сумму ")
         else:
-            emsrb_revenue.append(0)
+            print(f"Для билетов ценовой категорией -- {round(prices[y], 3)}$ ({names[y]}) нужно предоставлять {mest} мест за данную сумму ")
 
-    # Ensure each array has the same length as prices for consistency
-    if len(emsrb_revenue) < len(prices):
-        emsrb_revenue.extend([0] * (len(prices) - len(emsrb_revenue)))
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    emsrb = []
+    for price in prices:
+        print(f"{price}$ ({names[prices.index(price)]})")
+        if price < prices[len(summamoney)]:
+            for x in np.arange(0, 1000, 0.1):
+                probability = norm.cdf(x, mu[prices.index(price)], agsig[prices.index(price)])
+                survivor = 1 - probability
+                esmr = summamoney[prices.index(price)] * survivor
+                if esmr < price:
+                    emsrb.append((x, names[prices.index(price)]))
+                    break
+                elif esmr == price:
+                    emsrb.append((x, names[prices.index(price)]))
+                    break
+    if emsrb:
+        emsrb.append((protect[-1], names[-1]))  # добавляем последний защищенный элемент с его названием
+    emsra = [(protect[i], names[i]) for i in range(len(protect))]
 
-    return prices, protected_seats_a, emsrb_revenue
+    demsra = {key: value for value, key in emsra}
+    demsrb = {key: value for value, key in emsrb}
+    for name in names:
+        if name not in demsra:
+            print("--a--a--")
+            print(name)
+            print(mest)
+            demsra[name] = mest - sum(demsra.values())
+        if name not in demsrb:
+            print("--b--b--")
+            print(name)
+            print(mest)
+            demsrb[name] = mest - sum(demsrb.values())
+
+    print(f"ESMRB = {demsrb}")
+    print(f"ESMRA = {demsra}")
+    return demsra, demsrb

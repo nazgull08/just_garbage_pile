@@ -93,6 +93,7 @@ class InputWindow(QWidget):
         self.table.setRowCount(0)
 
     def calculate(self):
+        names = []
         prices = []
         mean = []
         sigma = []
@@ -100,6 +101,7 @@ class InputWindow(QWidget):
 
         # Извлечение данных из таблицы
         for row in range(self.table.rowCount()):
+            names.append(self.table.item(row, 0).text())
             prices.append(int(self.table.item(row, 1).text()))
             mean.append(float(self.table.item(row, 2).text()))
             sigma.append(float(self.table.item(row, 3).text()))
@@ -108,8 +110,11 @@ class InputWindow(QWidget):
         mest = int(self.seatsInput.text())
 
         # Вызов функций расчёта
-        calculated_prices_lw, protected_seats_lw = calculate_littlewood(prices, mean, sigma, mest)
-        calculated_prices_em, protected_seats_a, protected_seats_b = calculate_emsr(prices, mean, sigma, mest)
+        #calculated_prices_lw, protected_seats_lw = calculate_littlewood(names,prices, mean, sigma, mest)
+        protected_seats_a, protected_seats_b = calculate_emsr(names, prices, mean, sigma, mest)
+        print("==============================")
+        print("a",protected_seats_a)
+        print("b",protected_seats_b)
 
         # Обновление данных в output_window
-        self.outputWindow.updateResults(calculated_prices_lw, protected_seats_lw, calculated_prices_em, protected_seats_a, protected_seats_b)
+        self.outputWindow.updateResults(protected_seats_a, protected_seats_b)
