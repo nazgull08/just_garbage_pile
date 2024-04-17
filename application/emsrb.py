@@ -3,14 +3,27 @@ import numpy as np
 import math
 
 def calculate_emsr(names, prices, mean, sigma, mest):
-    prices = [520, 534, 567, 1050]
-    mean = [34, 39.6, 45.1, 17.3]
-    sigma = [11.3, 13.2, 15, 5.8]
-    names = ["d","c","b","a"]
+    combined = list(zip(names, prices, mean, sigma))
+    # Сортируем по цене (второй элемент в каждом кортеже)
+    sorted_combined = sorted(combined, key=lambda x: x[1])
+    # Разделяем отсортированный список кортежей обратно на четыре списка
+    names_sorted, prices_sorted, mean_sorted, sigma_sorted = zip(*sorted_combined)
+
+    names = list(names_sorted) 
+    prices = list(prices_sorted) 
+    mean = list(mean_sorted) 
+    sigma = list(sigma_sorted) 
+    #mean = [34, 39.6, 45.1, 17.3]
+    #sigma = [11.3, 13.2, 15, 5.8]
+    #names = ["d","c","b","a"]
+    #prices2 = [520, 534, 567, 1050]
+    #mean = [34, 39.6, 45.1, 17.3]
+    #sigma = [11.3, 13.2, 15, 5.8]
+    #names = ["d","c","b","a"]
 
     rez=[]
     protect=[]
-    list=[]
+    mylist=[]
     test=0
 
     print(f"////////////")
@@ -31,11 +44,11 @@ def calculate_emsr(names, prices, mean, sigma, mest):
 
         if sum(rez) != 0:
             protect.append(sum(rez))
-        list.extend(rez)
+        mylist.extend(rez)
         rez.clear()
 
     print(f"Rez ={rez}")
-    print(f"List ={list}")
+    print(f"List ={mylist}")
     print(f"Protect ={protect}")
 
 

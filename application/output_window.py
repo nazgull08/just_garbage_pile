@@ -24,23 +24,31 @@ class OutputWindow(QWidget):
         plotLayout = QVBoxLayout()
         figure = Figure()
         canvas = FigureCanvas(figure)
+        ax = figure.add_subplot(111)
+        ax.set_title(title)
         plotLayout.addWidget(canvas)
         tab.setLayout(plotLayout)
-        self.plotWidgets[plotId] = (figure, canvas)
+        self.plotWidgets[plotId] = (figure, canvas, ax)
 
     def updateResults(self, dataA, dataB):
         # Обновление данных для EMSR-a
-        figureA, canvasA = self.plotWidgets['emsra']
-        axA = figureA.add_subplot(111)
+        figureA, canvasA, axA = self.plotWidgets['emsra']
         axA.clear()
-        axA.bar(dataA.keys(), dataA.values(), color='blue')
+        barsA = axA.bar(dataA.keys(), dataA.values(), color='blue')
         axA.set_title("Результаты EMSR-a")
+        # Добавление текстовых подписей к столбцам с округлением до двух десятичных знаков
+        for bar in barsA:
+            height = bar.get_height()
+            axA.text(bar.get_x() + bar.get_width() / 2, height, f'{round(height, 2)}', ha='center', va='bottom')
         canvasA.draw()
 
         # Обновление данных для EMSR-b
-        figureB, canvasB = self.plotWidgets['emsrb']
-        axB = figureB.add_subplot(111)
+        figureB, canvasB, axB = self.plotWidgets['emsrb']
         axB.clear()
-        axB.bar(dataB.keys(), dataB.values(), color='green')
+        barsB = axB.bar(dataB.keys(), dataB.values(), color='green')
         axB.set_title("Результаты EMSR-b")
+        # Добавление текстовых подписей к столбцам с округлением до двух десятичных знаков
+        for bar in barsB:
+            height = bar.get_height()
+            axB.text(bar.get_x() + bar.get_width() / 2, height, f'{round(height, 2)}', ha='center', va='bottom')
         canvasB.draw()
